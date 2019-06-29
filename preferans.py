@@ -25,6 +25,11 @@ class Preferans:
     __is_misere = False
     __cnt_pass = 0
     __cnt_defined = 0
+    __trick = []
+    __player_tricks = [0, 0, 0]
+    __card_in_trick = 0
+    __current_suit = 0
+    __tricks_total = 0
 
     @staticmethod
     def set_round():
@@ -34,6 +39,8 @@ class Preferans:
         Preferans.__hand1 = []
         Preferans.__hand2 = []
         Preferans.__talon = []
+        Preferans.__player_tricks = [0, 0, 0]
+        Preferans.__tricks_total = 0
         Preferans.__pass = [False, False, False]
         Preferans.__not_defined = [True, True, True]
         Preferans.__first_player = (Preferans.__first_player + 1) % 3
@@ -41,6 +48,7 @@ class Preferans:
         Preferans.__move = Preferans.__first_player
         Preferans.__cnt_defined = 0
         Preferans.__cnt_pass = 0
+        Preferans.__tricks_number = 0
         card_list = []
         for i in range(28, 60):
             card_list.append(i)
@@ -86,6 +94,7 @@ class Preferans:
         if Preferans.__cnt_defined == 3 and Preferans.__cnt_pass == 2:
             if Preferans.__is_misere:
                 Preferans.__game_type = 2
+                Preferans.__trump_suit = -1
             else:
                 Preferans.__game_type = 1
             config.state = 'talon'
@@ -135,3 +144,131 @@ class Preferans:
     @staticmethod
     def talon():
         return Preferans.__talon
+
+    @staticmethod
+    def set_trump(game):
+        Preferans.__tricks_number = game // 4
+        Preferans.__trump_suit = game % 4
+        Preferans.__current_player = Preferans.__move
+
+    @staticmethod
+    def trick():
+        return Preferans.__trick
+
+    @staticmethod
+    def player_tricks():
+        return Preferans.__player_tricks
+
+    @staticmethod
+    def get_card(card):
+        suit = card % 4
+        Preferans.__card_in_trick += 1
+        Preferans.__trick.append(card)
+        if Preferans.__card_in_trick == 1:
+            Preferans.__current_suit = suit
+            Preferans.__current_player = (Preferans.__current_player + 1) % 3
+            return True
+        if Preferans.__card_in_trick == 2:
+            Preferans.__current_player = (Preferans.__current_player + 1) % 3
+            return True
+        if Preferans.__card_in_trick == 3:
+            def key(card1):
+                return (card1 % 4 == Preferans.__trump_suit) * (100 + card1 // 4) + \
+                       (card1 // 4) * (card1 % 4 == Preferans.__current_suit)
+
+            def comp(card1, card2):
+                return key(card1) > key(card2)
+            Preferans.__current_player = 0
+            if comp(Preferans.__trick[1], Preferans.__trick[Preferans.__current_player]):
+                Preferans.__current_player = 1
+            if comp(Preferans.__trick[2], Preferans.__trick[Preferans.__current_player]):
+                Preferans.__current_player = 2
+            Preferans.__player_tricks[Preferans.__current_player] += 1
+            Preferans.__trick.clear()
+            Preferans.__card_in_trick = 0
+            Preferans.__tricks_total += 1
+            if Preferans.__tricks_total == 10:
+                return False
+            else:
+                return True
+
+
+Preferans.set_round()
+Preferans.set_trump(6 * 4)
+'''print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())
+print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(7 * 4 + 2))
+print(Preferans.trick())
+print(Preferans.get_card(6 * 4 + 1))
+print(Preferans.trick())
+print(Preferans.player_tricks())'''
