@@ -4,6 +4,7 @@ from preferans import Preferans
 
 bot = telebot.TeleBot(config.Token)
 id_list = []
+name_list = []
 count_id = 0
 
 
@@ -12,6 +13,7 @@ def start_messaging(message):
     global count_id
     bot.send_message(message.from_user.id, 'Ты в игре!')
     id_list.append(message.from_user.id)
+    name_list.append(message.from_user.first_name)
     count_id += 1
     if count_id == config.cnt_players:
         new_round()
@@ -39,9 +41,35 @@ def bidding(message):
             type_answer = 3
         if message.text == 'мизер':
             type_answer = 2
+        bid_message = 'Игрок ' + message.from_user.first_name + ' сказал '
+        if type_answer == 1:
+            bid_message += hash_to_sting(Preferans.dib())
+        if type_answer == 2:
+            bid_message += 'мизер'
+        if type_answer == 3:
+            bid_message += 'пас'
+        for i in range(3):
+            if i != Preferans.current_player():
+                bot.send_message(id_list[i], bid_message)
         if Preferans.update_bidding(type_answer):
             ask_bidding()
+        else:
+            result = ''
+            if Preferans.game_type() == 1:
+                result = 'Играет ' + name_list[Preferans.declarer()] + '. Ждем пока игрок закажет игру.'
+            if Preferans.game_type() == 2:
+                result = name_list[Preferans.declarer()] + ' играет мизер. Ждем пока игрок понесет карты.'
+            if Preferans.game_type() == 3:
+                result = 'Распас. Ход с игрока ' + name_list[Preferans.move()]
+            for i in id_list:
+                bot.send_message(i, result)
+            if Preferans.game_type() == 1 or Preferans.game_type() == 2:
+                talon = 'Прикуп:\n' + hand_to_string(Preferans.talon()) + '\nКакие карты ты хочешь понести?'
+                bot.send_message(id_list[Preferans.declarer()], talon)
 
+
+def offer_game():
+    print(3)
 
 
 @bot.message_handler(func=lambda message: config.state != 'bidding')

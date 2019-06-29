@@ -37,7 +37,8 @@ class Preferans:
         Preferans.__pass = [False, False, False]
         Preferans.__not_defined = [True, True, True]
         Preferans.__first_player = (Preferans.__first_player + 1) % 3
-        Preferans.__move = Preferans.__current_player = Preferans.__first_player
+        Preferans.__current_player = Preferans.__first_player
+        Preferans.__move = Preferans.__first_player
         Preferans.__cnt_defined = 0
         Preferans.__cnt_pass = 0
         card_list = []
@@ -80,7 +81,7 @@ class Preferans:
                 Preferans.__cnt_defined += 1
         if Preferans.__cnt_pass == 3:
             Preferans.__game_type = 3
-            config.state = 'raspas'
+            config.state = 'all-pass'
             return False
         if Preferans.__cnt_defined == 3 and Preferans.__cnt_pass == 2:
             if Preferans.__is_misere:
@@ -118,3 +119,19 @@ class Preferans:
     @staticmethod
     def state():
         return config.state
+
+    @staticmethod
+    def game_type():
+        return Preferans.__game_type
+
+    @staticmethod
+    def declarer():
+        return Preferans.__declarer
+
+    @staticmethod
+    def move():
+        return Preferans.__move
+
+    @staticmethod
+    def talon():
+        return Preferans.__talon
