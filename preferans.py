@@ -101,10 +101,3 @@ class Preferans:
 
     def dib(self):
         return Preferans.__dib + 1
-
-
-pref = Preferans()
-pref.set_round()
-print(pref.update_bidding(3))
-print(pref.update_bidding(2))
-print(pref.update_bidding(1))
