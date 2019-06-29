@@ -7,6 +7,9 @@ def card_suit(card):
 
 
 class Preferans:
+    __pool = [0, 0, 0]
+    __whist = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
+    __mountain = [0, 0, 0]
     __state = ''
     __hand0 = []
     __hand1 = []
@@ -146,6 +149,33 @@ class Preferans:
         return Preferans.__talon
 
     @staticmethod
+    def add_talon():
+        if Preferans.declarer() == 0:
+            Preferans.__hand0.append(Preferans.__talon[0])
+            Preferans.__hand0.append(Preferans.__talon[1])
+            Preferans.__hand0.sort(key=card_suit)
+        if Preferans.declarer() == 1:
+            Preferans.__hand1.append(Preferans.__talon[0])
+            Preferans.__hand1.append(Preferans.__talon[1])
+            Preferans.__hand1.sort(key=card_suit)
+        if Preferans.declarer() == 2:
+            Preferans.__hand2.append(Preferans.__talon[0])
+            Preferans.__hand2.append(Preferans.__talon[1])
+            Preferans.__hand2.sort(key=card_suit)
+
+    @staticmethod
+    def discard(card1_id, card2_id):
+        if Preferans.declarer() == 0:
+            del Preferans.__hand0[card1_id]
+            del Preferans.__hand0[card2_id]
+        if Preferans.declarer() == 1:
+            del Preferans.__hand1[card1_id]
+            del Preferans.__hand1[card2_id]
+        if Preferans.declarer() == 2:
+            del Preferans.__hand2[card1_id]
+            del Preferans.__hand2[card2_id]
+
+    @staticmethod
     def set_trump(game):
         Preferans.__tricks_number = game // 4
         Preferans.__trump_suit = game % 4
@@ -168,16 +198,19 @@ class Preferans:
             Preferans.__current_suit = suit
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if Preferans.__card_in_trick == 2:
+        if Preferans.__card_in_trick == 2 or (Preferans.__game_type == 3 and Preferans.__tricks_total <= 2):
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if Preferans.__card_in_trick == 3:
+        if (Preferans.__card_in_trick == 3 and (Preferans.__game_type != 3 or Preferans.__tricks_total > 2)) \
+                or Preferans.__card_in_trick == 4:
             def key(card1):
                 return (card1 % 4 == Preferans.__trump_suit) * (100 + card1 // 4) + \
                        (card1 // 4) * (card1 % 4 == Preferans.__current_suit)
 
             def comp(card1, card2):
                 return key(card1) > key(card2)
+            if Preferans.__tricks_total == 4:
+                del Preferans.__trick[0]
             Preferans.__current_player = 0
             if comp(Preferans.__trick[1], Preferans.__trick[Preferans.__current_player]):
                 Preferans.__current_player = 1
@@ -193,9 +226,9 @@ class Preferans:
                 return True
 
 
-Preferans.set_round()
+'''Preferans.set_round()
 Preferans.set_trump(6 * 4)
-'''print(Preferans.get_card(8 * 4 + 2))
+print(Preferans.get_card(8 * 4 + 2))
 print(Preferans.trick())
 print(Preferans.get_card(7 * 4 + 2))
 print(Preferans.trick())
