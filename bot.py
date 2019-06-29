@@ -1,11 +1,10 @@
 import telebot
 import config
-import preferans
+from preferans import Preferans
 
 bot = telebot.TeleBot(config.Token)
 id_list = []
 count_id = 0
-Preferans = preferans.Preferans()
 
 
 @bot.message_handler(commands=['start'])
@@ -28,7 +27,7 @@ def new_round():
 
 @bot.message_handler(func=lambda message: config.state == 'bidding')
 def bidding(message):
-    if message.from_user.id != id_list[Preferans.current_player()] :
+    if message.from_user.id != id_list[Preferans.current_player()]:
         bot.send_message(message.from_user.id, 'Имей терпение, блэт!')
     elif message.text != '+' and message.text != '-' and message.text != 'мизер':
         bot.send_message(message.from_user.id, 'Неккоректные входные данные')
@@ -42,12 +41,12 @@ def bidding(message):
             type_answer = 2
         if Preferans.update_bidding(type_answer):
             ask_bidding()
-            print(Preferans.current_player())
+
 
 
 @bot.message_handler(func=lambda message: config.state != 'bidding')
 def hz(message):
-    print('asdsadsa')
+    print(message.from_user.first_name)
 
 
 def hash_to_sting(_hash):
@@ -88,7 +87,7 @@ def hand_to_string(hand):
 def ask_bidding():
     bot.send_message(id_list[Preferans.current_player()], 'Ваше слово!!\nМинимальная ставка - '
                      + hash_to_sting(Preferans.dib()) + 'Отправь "+" если хочешь играть, '
-                                                        '"-" если хочешь пасануть и "мизер" если хочешь сказать мизер\n')
+                                                        '"-" если хочешь пасануть или "мизер"\n')
 
 
 bot.polling()

@@ -26,7 +26,8 @@ class Preferans:
     __cnt_pass = 0
     __cnt_defined = 0
 
-    def set_round(self):
+    @staticmethod
+    def set_round():
         Preferans.state = 'bidding'
         config.state = 'bidding'
         Preferans.__hand0 = []
@@ -55,7 +56,8 @@ class Preferans:
         for i in range(2):
             Preferans.__talon.append(card_list[30 + i])
 
-    def update_bidding(self, type_answer):
+    @staticmethod
+    def update_bidding(type_answer):
         if type_answer == 1:  # game
             Preferans.__dib += 1
             Preferans.__is_misere = False
@@ -78,14 +80,14 @@ class Preferans:
                 Preferans.__cnt_defined += 1
         if Preferans.__cnt_pass == 3:
             Preferans.__game_type = 3
-            Preferans.__state = 'raspas'
+            config.state = 'raspas'
             return False
         if Preferans.__cnt_defined == 3 and Preferans.__cnt_pass == 2:
             if Preferans.__is_misere:
                 Preferans.__game_type = 2
             else:
                 Preferans.__game_type = 1
-            Preferans.__state = 'talon'
+            config.state = 'talon'
             return False
         Preferans.__current_player = (Preferans.__current_player + 1) % 3
         while not Preferans.__not_defined[Preferans.__current_player] and \
@@ -93,20 +95,26 @@ class Preferans:
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
         return True
 
-    def hand0(self):
+    @staticmethod
+    def hand0():
         return Preferans.__hand0
 
-    def hand1(self):
+    @staticmethod
+    def hand1():
         return Preferans.__hand1
 
-    def hand2(self):
+    @staticmethod
+    def hand2():
         return Preferans.__hand2
 
-    def current_player(self):
+    @staticmethod
+    def current_player():
         return Preferans.__current_player
 
-    def dib(self):
+    @staticmethod
+    def dib():
         return Preferans.__dib + 1
 
-    def state(self):
+    @staticmethod
+    def state():
         return config.state
