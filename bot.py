@@ -1,10 +1,11 @@
 import telebot
 import const
-from preferans import Preferans
+import preferans
 
 bot = telebot.TeleBot(const.Token)
 id_list = []
 count_id = 0
+Preferans = preferans.Preferans()
 
 
 @bot.message_handler(commands=['start'])
