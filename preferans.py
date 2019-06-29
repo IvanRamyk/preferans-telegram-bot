@@ -1,4 +1,5 @@
 import random
+import config
 
 
 def card_suit(card):
@@ -6,6 +7,7 @@ def card_suit(card):
 
 
 class Preferans:
+    __state = ''
     __hand0 = []
     __hand1 = []
     __hand2 = []
@@ -25,6 +27,8 @@ class Preferans:
     __cnt_defined = 0
 
     def set_round(self):
+        Preferans.state = 'bidding'
+        config.state = 'bidding'
         Preferans.__hand0 = []
         Preferans.__hand1 = []
         Preferans.__hand2 = []
@@ -60,7 +64,7 @@ class Preferans:
                 Preferans.__not_defined[Preferans.__current_player] = False
                 Preferans.__cnt_defined += 1
         if type_answer == 2:  # misere
-            Preferans.__dib = 31
+            Preferans.__dib = 35
             Preferans.__is_misere = True
             Preferans.__declarer = Preferans.__current_player
             if Preferans.__not_defined[Preferans.__current_player]:
@@ -74,12 +78,14 @@ class Preferans:
                 Preferans.__cnt_defined += 1
         if Preferans.__cnt_pass == 3:
             Preferans.__game_type = 3
+            Preferans.__state = 'raspas'
             return False
         if Preferans.__cnt_defined == 3 and Preferans.__cnt_pass == 2:
             if Preferans.__is_misere:
                 Preferans.__game_type = 2
             else:
                 Preferans.__game_type = 1
+            Preferans.__state = 'talon'
             return False
         Preferans.__current_player = (Preferans.__current_player + 1) % 3
         while not Preferans.__not_defined[Preferans.__current_player] and \
@@ -101,3 +107,6 @@ class Preferans:
 
     def dib(self):
         return Preferans.__dib + 1
+
+    def state(self):
+        return config.state
