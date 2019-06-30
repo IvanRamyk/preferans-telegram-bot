@@ -13,11 +13,70 @@ discard = []
 @bot.message_handler(commands=['start'])
 def start_messaging(message):
     global count_id
-    bot.send_message(message.from_user.id, 'Ты в игре!')
-    id_list.append(message.from_user.id)
-    name_list.append(message.from_user.first_name)
-    count_id += 1
-    if count_id == config.cnt_players:
+    if count_id < 3:
+        bot.send_message(message.from_user.id, 'Поздравляем! Вы в игре!')
+        id_list.append(message.from_user.id)
+        name_list.append(message.from_user.first_name)
+        count_id += 1
+        if count_id == config.cnt_players:
+            new_round()
+    else:
+        bot.send_message(message.from_user.id, 'К сожалению, мест нет(')
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'bidding')
+def bidding(call):
+    if call.from_user.id != id_list[Preferans.current_player()]:
+        return
+    if Preferans.update_bidding(call.data):
+        ask_bidding()
+    else:
+        result = ''
+        if Preferans.game_type() == 'game':
+            result = 'Играет ' + name_list[Preferans.declarer()] + '. Ждем пока игрок закажет игру.'
+        if Preferans.game_type() == 'misere':
+            result = name_list[Preferans.declarer()] + ' играет мизер. Ждем пока игрок понесет карты.'
+        if Preferans.game_type() == 'all-pass':
+            result = 'Распас. Ход с игрока ' + name_list[Preferans.move()]
+        for i in id_list:
+            if i != id_list[Preferans.declarer()]:
+                bot.send_message(i, result)
+        if Preferans.game_type() == 'game' or Preferans.game_type() == 'misere':
+            talon = 'Прикуп:\n' + hand_to_string(Preferans.talon())
+            for i in id_list:
+                bot.send_message(i, talon)
+            Preferans.add_talon()
+            keyboard = hand_to_keyboard(Preferans.hand_declarer())
+            bot.send_message(id_list[Preferans.declarer()], text='Что хотите понести?', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'talon')
+def discarding(call):
+    if call.from_user.id != id_list[Preferans.current_player()]:
+        return
+    discard.append(call.data)
+    if len(discard) == 2:
+        Preferans.discard(int(discard[0]), int(discard[1]))
+        discard.clear()
+        if Preferans.game_type() == 'game':
+            bot.send_message(id_list[Preferans.declarer()], text='Закажите игру', reply_markup=game_keyboard())
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'set_game')
+def set_game(call):
+    if call.from_user.id != id_list[Preferans.current_player()]:
+        return
+    Preferans.set_game(int(call.data))
+    start()
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'game')
+def get_card(call):
+    if call.from_user.id != id_list[Preferans.current_player()]:
+        return
+    if Preferans.get_card(int(call.data)):
+        start()
+    else:
         new_round()
 
 
@@ -41,37 +100,20 @@ def ask_bidding():
     bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
 
 
-@bot.callback_query_handler(func=lambda call: config.state == 'bidding')
-def bidding(call):
-    if Preferans.update_bidding(call.data):
-        ask_bidding()
-    else:
-        result = ''
-        if Preferans.game_type() == 1:
-            result = 'Играет ' + name_list[Preferans.declarer()] + '. Ждем пока игрок закажет игру.'
-        if Preferans.game_type() == 2:
-            result = name_list[Preferans.declarer()] + ' играет мизер. Ждем пока игрок понесет карты.'
-        if Preferans.game_type() == 3:
-            result = 'Распас. Ход с игрока ' + name_list[Preferans.move()]
-        for i in id_list:
-            if i != id_list[Preferans.declarer()]:
-                bot.send_message(i, result)
-        if Preferans.game_type() == 1 or Preferans.game_type() == 2:
-            talon = 'Прикуп:\n' + hand_to_string(Preferans.talon())
-            for i in id_list:
-                bot.send_message(i, talon)
-            Preferans.add_talon()
-            keyboard = hand_to_keyboard(Preferans.hand_declarer())
-            bot.send_message(id_list[Preferans.declarer()], text='Что хотите понести?', reply_markup=keyboard)
-
-
-@bot.callback_query_handler(func=lambda call: config.state == 'talon')
-def discarding(call):
-    discard.append(call.data)
-    if len(discard) == 2:
-        Preferans.discard(int(discard[0]), int(discard[1]))
-        discard.clear()
-        print(hand_to_string(Preferans.hand_declarer()))
+def game_keyboard():
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    keys = []
+    for i in range(Preferans.dib() - 1, 44):
+        if i % 4 == 0:
+            key = telebot.types.InlineKeyboardButton(text=hash_to_sting(i), callback_data=str(i))
+            keyboard.row(*keys)
+            keys.clear()
+            keys.append(key)
+        else:
+            key = telebot.types.InlineKeyboardButton(text=hash_to_sting(i), callback_data=str(i))
+            keys.append(key)
+    keyboard.row(*keys)
+    return keyboard
 
 
 def suit(card):
@@ -79,7 +121,6 @@ def suit(card):
 
 
 def hand_to_keyboard(hand):
-    print(len(hand))
     keys = []
     keyboard = telebot.types.InlineKeyboardMarkup()
     for i in range(len(hand)):
@@ -93,6 +134,21 @@ def hand_to_keyboard(hand):
             keys.append(key)
     keyboard.row(*keys)
     return keyboard
+
+
+def current_trick():
+    if len(Preferans.trick()) == 0:
+        return ''
+    trick = []
+    for i in Preferans.trick():
+        trick.append(i.card)
+    return 'Текущая взятка\n' + hand_to_string(trick) + '\n'
+
+
+def start():
+    message = current_trick() + 'Ваш ход'
+    bot.send_message(id_list[Preferans.current_player()], text=message,
+                     reply_markup=hand_to_keyboard(Preferans.current_hand()))
 
 
 '''@bot.message_handler(func=lambda message: config.state == 'bidding')
@@ -172,10 +228,6 @@ def hand_to_string(hand):
         answer += ' '
         last_suit = i % 4
     return answer
-
-
-def offer_game():
-    print(3)
 
 
 bot.polling()
