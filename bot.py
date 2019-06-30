@@ -6,6 +6,8 @@ bot = telebot.TeleBot(config.Token)
 id_list = []
 name_list = []
 count_id = 0
+age = 0
+discard = []
 
 
 @bot.message_handler(commands=['start'])
@@ -27,7 +29,73 @@ def new_round():
     ask_bidding()
 
 
-@bot.message_handler(func=lambda message: config.state == 'bidding')
+def ask_bidding():
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    key_raz = telebot.types.InlineKeyboardButton(text=hash_to_sting(Preferans.dib()), callback_data='raise')
+    key_pas = telebot.types.InlineKeyboardButton(text='Пас', callback_data='fold')
+    key_misere = telebot.types.InlineKeyboardButton(text='Мизер', callback_data='misere')
+    keyboard.add(key_raz)
+    keyboard.add(key_pas)
+    keyboard.add(key_misere)
+    question = "Ваша ставка?"
+    bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'bidding')
+def bidding(call):
+    if Preferans.update_bidding(call.data):
+        ask_bidding()
+    else:
+        result = ''
+        if Preferans.game_type() == 1:
+            result = 'Играет ' + name_list[Preferans.declarer()] + '. Ждем пока игрок закажет игру.'
+        if Preferans.game_type() == 2:
+            result = name_list[Preferans.declarer()] + ' играет мизер. Ждем пока игрок понесет карты.'
+        if Preferans.game_type() == 3:
+            result = 'Распас. Ход с игрока ' + name_list[Preferans.move()]
+        for i in id_list:
+            if i != id_list[Preferans.declarer()]:
+                bot.send_message(i, result)
+        if Preferans.game_type() == 1 or Preferans.game_type() == 2:
+            talon = 'Прикуп:\n' + hand_to_string(Preferans.talon())
+            for i in id_list:
+                bot.send_message(i, talon)
+            Preferans.add_talon()
+            keyboard = hand_to_keyboard(Preferans.hand_declarer())
+            bot.send_message(id_list[Preferans.declarer()], text='Что хотите понести?', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: config.state == 'talon')
+def discarding(call):
+    discard.append(call.data)
+    if len(discard) == 2:
+        Preferans.discard(int(discard[0]), int(discard[1]))
+        discard.clear()
+        print(hand_to_string(Preferans.hand_declarer()))
+
+
+def suit(card):
+    return card % 4
+
+
+def hand_to_keyboard(hand):
+    print(len(hand))
+    keys = []
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    for i in range(len(hand)):
+        if i == 0 or suit(hand[i]) == suit(hand[i-1]):
+            key = telebot.types.InlineKeyboardButton(text=hash_to_sting(hand[i]), callback_data=str(i))
+            keys.append(key)
+        else:
+            key = telebot.types.InlineKeyboardButton(text=hash_to_sting(hand[i]), callback_data=str(i))
+            keyboard.row(*keys)
+            keys.clear()
+            keys.append(key)
+    keyboard.row(*keys)
+    return keyboard
+
+
+'''@bot.message_handler(func=lambda message: config.state == 'bidding')
 def bidding(message):
     if message.from_user.id != id_list[Preferans.current_player()]:
         bot.send_message(message.from_user.id, 'Имей терпение, блэт!')
@@ -68,22 +136,7 @@ def bidding(message):
                 for i in id_list:
                     bot.send_message(i, talon)
                 bot.send_message(id_list[Preferans.declarer()], 'Ваша рука:' +
-                                 hand_to_string(Preferans.add_talon()) + '\nЧто хочешь понести?')
-
-
-@bot.message_handler(func=lambda message: config.state == 'talon')
-def discarding(message):
-    cards = message.text.split()
-    Preferans.discard(int(cards[0]), int(cards[1]))
-    bot.send_message(id_list[Preferans.declarer()], 'Рука превращается в...\n' + hand_to_string(Preferans.hand_declarer()))
-
-def offer_game():
-    print(3)
-
-
-@bot.message_handler(func=lambda message: config.state != 'bidding')
-def hz(message):
-    print(message.from_user.first_name)
+                                 hand_to_string(Preferans.add_talon()) + '\nЧто хочешь понести?')'''
 
 
 def hash_to_sting(_hash):
@@ -121,10 +174,8 @@ def hand_to_string(hand):
     return answer
 
 
-def ask_bidding():
-    bot.send_message(id_list[Preferans.current_player()], 'Ваше слово!!\nМинимальная ставка - '
-                     + hash_to_sting(Preferans.dib()) + 'Отправь "+" если хочешь играть, '
-                                                        '"-" если хочешь пасануть или "мизер"\n')
+def offer_game():
+    print(3)
 
 
 bot.polling()

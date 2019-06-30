@@ -70,21 +70,21 @@ class Preferans:
 
     @staticmethod
     def update_bidding(type_answer):
-        if type_answer == 1:  # game
+        if type_answer == 'raise':  # game
             Preferans.__dib += 1
             Preferans.__is_misere = False
             Preferans.__declarer = Preferans.__current_player
             if Preferans.__not_defined[Preferans.__current_player]:
                 Preferans.__not_defined[Preferans.__current_player] = False
                 Preferans.__cnt_defined += 1
-        if type_answer == 2:  # misere
+        if type_answer == 'misere':  # misere
             Preferans.__dib = 35
             Preferans.__is_misere = True
             Preferans.__declarer = Preferans.__current_player
             if Preferans.__not_defined[Preferans.__current_player]:
                 Preferans.__not_defined[Preferans.__current_player] = False
                 Preferans.__cnt_defined += 1
-        if type_answer == 3:  # pass
+        if type_answer == 'fold':  # pass
             Preferans.__pass[Preferans.__current_player] = True
             Preferans.__cnt_pass += 1
             if Preferans.__not_defined[Preferans.__current_player]:
@@ -107,46 +107,6 @@ class Preferans:
                 Preferans.__pass[Preferans.__current_player]:
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
         return True
-
-    @staticmethod
-    def hand0():
-        return Preferans.__hand0
-
-    @staticmethod
-    def hand1():
-        return Preferans.__hand1
-
-    @staticmethod
-    def hand2():
-        return Preferans.__hand2
-
-    @staticmethod
-    def current_player():
-        return Preferans.__current_player
-
-    @staticmethod
-    def dib():
-        return Preferans.__dib + 1
-
-    @staticmethod
-    def state():
-        return config.state
-
-    @staticmethod
-    def game_type():
-        return Preferans.__game_type
-
-    @staticmethod
-    def declarer():
-        return Preferans.__declarer
-
-    @staticmethod
-    def move():
-        return Preferans.__move
-
-    @staticmethod
-    def talon():
-        return Preferans.__talon
 
     @staticmethod
     def add_talon():
@@ -195,14 +155,6 @@ class Preferans:
         Preferans.__current_player = Preferans.__move
 
     @staticmethod
-    def trick():
-        return Preferans.__trick
-
-    @staticmethod
-    def player_tricks():
-        return Preferans.__player_tricks
-
-    @staticmethod
     def get_card(card):
         suit = card % 4
         Preferans.__card_in_trick += 1
@@ -246,6 +198,54 @@ class Preferans:
             return Preferans.__hand1
         if Preferans.declarer() == 2:
             return Preferans.__hand2
+
+    @staticmethod
+    def hand0():
+        return Preferans.__hand0
+
+    @staticmethod
+    def hand1():
+        return Preferans.__hand1
+
+    @staticmethod
+    def hand2():
+        return Preferans.__hand2
+
+    @staticmethod
+    def current_player():
+        return Preferans.__current_player
+
+    @staticmethod
+    def dib():
+        return Preferans.__dib + 1
+
+    @staticmethod
+    def state():
+        return config.state
+
+    @staticmethod
+    def game_type():
+        return Preferans.__game_type
+
+    @staticmethod
+    def declarer():
+        return Preferans.__declarer
+
+    @staticmethod
+    def move():
+        return Preferans.__move
+
+    @staticmethod
+    def talon():
+        return Preferans.__talon
+
+    @staticmethod
+    def trick():
+        return Preferans.__trick
+
+    @staticmethod
+    def player_tricks():
+        return Preferans.__player_tricks
 
 
 '''Preferans.set_round()
