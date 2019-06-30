@@ -1,5 +1,4 @@
 import telebot
-#from telebot import types
 import config
 from preferans import Preferans
 
@@ -7,14 +6,12 @@ bot = telebot.TeleBot(config.Token)
 id_list = []
 name_list = []
 count_id = 0
-age = 0
 
 
 @bot.message_handler(commands=['start'])
 def start_messaging(message):
     global count_id
     bot.send_message(message.from_user.id, 'Ты в игре!')
-   # get_age(message)
     id_list.append(message.from_user.id)
     name_list.append(message.from_user.first_name)
     count_id += 1
@@ -125,35 +122,9 @@ def hand_to_string(hand):
 
 
 def ask_bidding():
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    key_raz = telebot.types.InlineKeyboardButton(text=hash_to_sting(Preferans.dib()), callback_data='raise')
-    key_pas = telebot.types.InlineKeyboardButton(text='Пас', callback_data='fold')
-    key_misere = telebot.types.InlineKeyboardButton(text='Мизер', callback_data='misere')
-    keyboard.add(key_raz)
-    keyboard.add(key_pas)
-    keyboard.add(key_misere)
-    question = "Ваша ставка?"
-    bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_bidding(call):
-    if call.data == 'raise':
-        if Preferans.update_bidding(1):
-            ask_bidding()
-    elif call.data == 'misere':
-        if Preferans.update_bidding(2):
-            ask_bidding()
-    elif call.data == 'fold':
-        if Preferans.update_bidding(3):
-            ask_bidding()
-
-
-'''
-def ask_bidding():
     bot.send_message(id_list[Preferans.current_player()], 'Ваше слово!!\nМинимальная ставка - '
                      + hash_to_sting(Preferans.dib()) + 'Отправь "+" если хочешь играть, '
                                                         '"-" если хочешь пасануть или "мизер"\n')
-'''
+
 
 bot.polling()
