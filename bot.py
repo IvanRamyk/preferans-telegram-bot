@@ -64,9 +64,18 @@ def bidding(message):
             for i in id_list:
                 bot.send_message(i, result)
             if Preferans.game_type() == 1 or Preferans.game_type() == 2:
-                talon = 'Прикуп:\n' + hand_to_string(Preferans.talon()) + '\nКакие карты ты хочешь понести?'
-                bot.send_message(id_list[Preferans.declarer()], talon)
+                talon = 'Прикуп:\n' + hand_to_string(Preferans.talon())
+                for i in id_list:
+                    bot.send_message(i, talon)
+                bot.send_message(id_list[Preferans.declarer()], 'Ваша рука:' +
+                                 hand_to_string(Preferans.add_talon()) + '\nЧто хочешь понести?')
 
+
+@bot.message_handler(func=lambda message: config.state == 'talon')
+def discarding(message):
+    cards = message.text.split()
+    Preferans.discard(int(cards[0]), int(cards[1]))
+    bot.send_message(id_list[Preferans.declarer()], 'Рука превращается в...\n' + hand_to_string(Preferans.hand_declarer()))
 
 def offer_game():
     print(3)
