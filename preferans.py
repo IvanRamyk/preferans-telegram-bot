@@ -154,26 +154,39 @@ class Preferans:
             Preferans.__hand0.append(Preferans.__talon[0])
             Preferans.__hand0.append(Preferans.__talon[1])
             Preferans.__hand0.sort(key=card_suit)
+            return Preferans.__hand0
         if Preferans.declarer() == 1:
             Preferans.__hand1.append(Preferans.__talon[0])
             Preferans.__hand1.append(Preferans.__talon[1])
             Preferans.__hand1.sort(key=card_suit)
+            return Preferans.__hand1
         if Preferans.declarer() == 2:
             Preferans.__hand2.append(Preferans.__talon[0])
             Preferans.__hand2.append(Preferans.__talon[1])
             Preferans.__hand2.sort(key=card_suit)
+            return Preferans.__hand2
 
     @staticmethod
     def discard(card1_id, card2_id):
         if Preferans.declarer() == 0:
             del Preferans.__hand0[card1_id]
-            del Preferans.__hand0[card2_id]
+            if card1_id < card2_id:
+                del Preferans.__hand0[card2_id - 1]
+            else:
+                del Preferans.__hand0[card2_id]
         if Preferans.declarer() == 1:
             del Preferans.__hand1[card1_id]
-            del Preferans.__hand1[card2_id]
+            if card1_id < card1_id:
+                del Preferans.__hand1[card1_id - 1]
+            else:
+                del Preferans.__hand1[card2_id]
         if Preferans.declarer() == 2:
             del Preferans.__hand2[card1_id]
-            del Preferans.__hand2[card2_id]
+            if card1_id < card1_id:
+                del Preferans.__hand2[card1_id - 1]
+            else:
+                del Preferans.__hand2[card2_id]
+        config.state = 'game'
 
     @staticmethod
     def set_trump(game):
@@ -224,6 +237,15 @@ class Preferans:
                 return False
             else:
                 return True
+
+    @staticmethod
+    def hand_declarer():
+        if Preferans.declarer() == 0:
+            return Preferans.__hand0
+        if Preferans.declarer() == 1:
+            return Preferans.__hand1
+        if Preferans.declarer() == 2:
+            return Preferans.__hand2
 
 
 '''Preferans.set_round()
