@@ -139,60 +139,16 @@ def hand_to_keyboard(hand):
 def current_trick():
     if len(Preferans.trick()) == 0:
         return ''
-    trick = []
+    answer = 'Текущая взятка\n'
     for i in Preferans.trick():
-        trick.append(i.card)
-    return 'Текущая взятка\n' + hand_to_string(trick) + '\n'
+        answer += name_list[i.player] + ' - ' + hash_to_sting(i.card) + '\n'
+    return answer
 
 
 def start():
     message = current_trick() + 'Ваш ход'
     bot.send_message(id_list[Preferans.current_player()], text=message,
                      reply_markup=hand_to_keyboard(Preferans.current_hand()))
-
-
-'''@bot.message_handler(func=lambda message: config.state == 'bidding')
-def bidding(message):
-    if message.from_user.id != id_list[Preferans.current_player()]:
-        bot.send_message(message.from_user.id, 'Имей терпение, блэт!')
-    elif message.text != '+' and message.text != '-' and message.text != 'мизер':
-        bot.send_message(message.from_user.id, 'Неккоректные входные данные')
-    else:
-        type_answer = 0
-        if message.text == '+':
-            type_answer = 1
-        if message.text == '-':
-            type_answer = 3
-        if message.text == 'мизер':
-            type_answer = 2
-        bid_message = 'Игрок ' + message.from_user.first_name + ' сказал '
-        if type_answer == 1:
-            bid_message += hash_to_sting(Preferans.dib())
-        if type_answer == 2:
-            bid_message += 'мизер'
-        if type_answer == 3:
-            bid_message += 'пас'
-        for i in range(3):
-            if i != Preferans.current_player():
-                bot.send_message(id_list[i], bid_message)
-        if Preferans.update_bidding(type_answer):
-            ask_bidding()
-        else:
-            result = ''
-            if Preferans.game_type() == 1:
-                result = 'Играет ' + name_list[Preferans.declarer()] + '. Ждем пока игрок закажет игру.'
-            if Preferans.game_type() == 2:
-                result = name_list[Preferans.declarer()] + ' играет мизер. Ждем пока игрок понесет карты.'
-            if Preferans.game_type() == 3:
-                result = 'Распас. Ход с игрока ' + name_list[Preferans.move()]
-            for i in id_list:
-                bot.send_message(i, result)
-            if Preferans.game_type() == 1 or Preferans.game_type() == 2:
-                talon = 'Прикуп:\n' + hand_to_string(Preferans.talon())
-                for i in id_list:
-                    bot.send_message(i, talon)
-                bot.send_message(id_list[Preferans.declarer()], 'Ваша рука:' +
-                                 hand_to_string(Preferans.add_talon()) + '\nЧто хочешь понести?')'''
 
 
 def hash_to_sting(_hash):
