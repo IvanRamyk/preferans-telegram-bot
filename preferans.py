@@ -16,10 +16,7 @@ class Preferans:
     __pool = [0, 0, 0]
     __whist = [(0, 0, 0), (0, 0, 0), (0, 0, 0)]
     __mountain = [0, 0, 0]
-    __state = ''
-    __hand0 = []
-    __hand1 = []
-    __hand2 = []
+    __hand = [[], [], []]
     __talon = []
     __not_defined = []
     __pass = []
@@ -36,23 +33,27 @@ class Preferans:
     __cnt_defined = 0
     __tricks = []
     __player_tricks = [0, 0, 0]
-    __card_in_trick = 0
+    __cards_in_trick = 0
     __current_suit = 0
     __tricks_total = 0
+    __last_trick = []
+
+    @staticmethod
+    def next_player(player):
+        return (player + 1) % 3
 
     @staticmethod
     def set_round():
-        Preferans.state = 'bidding'
         config.state = 'bidding'
-        Preferans.__hand0 = []
-        Preferans.__hand1 = []
-        Preferans.__hand2 = []
+        Preferans.__hand[0] = []
+        Preferans.__hand[1] = []
+        Preferans.__hand[2] = []
         Preferans.__talon = []
         Preferans.__player_tricks = [0, 0, 0]
         Preferans.__tricks_total = 0
         Preferans.__pass = [False, False, False]
         Preferans.__not_defined = [True, True, True]
-        Preferans.__first_player = (Preferans.__first_player + 1) % 3
+        Preferans.__first_player = Preferans.next_player(Preferans.__first_player)
         Preferans.__current_player = Preferans.__first_player
         Preferans.__move = Preferans.__first_player
         Preferans.__cnt_defined = 0
@@ -63,14 +64,14 @@ class Preferans:
             card_list.append(i)
         random.shuffle(card_list)
         for i in range(10):
-            Preferans.__hand0.append(card_list[i])
+            Preferans.__hand[0].append(card_list[i])
         for i in range(10):
-            Preferans.__hand1.append(card_list[10 + i])
+            Preferans.__hand[1].append(card_list[10 + i])
         for i in range(10):
-            Preferans.__hand2.append(card_list[20 + i])
-        Preferans.__hand0.sort(key=card_suit)
-        Preferans.__hand1.sort(key=card_suit)
-        Preferans.__hand2.sort(key=card_suit)
+            Preferans.__hand[2].append(card_list[20 + i])
+        Preferans.__hand[0].sort(key=card_suit)
+        Preferans.__hand[1].sort(key=card_suit)
+        Preferans.__hand[2].sort(key=card_suit)
         for i in range(2):
             Preferans.__talon.append(card_list[30 + i])
 
@@ -108,54 +109,30 @@ class Preferans:
                 Preferans.__game_type = 'game'
             config.state = 'talon'
             return False
-        Preferans.__current_player = (Preferans.__current_player + 1) % 3
+        Preferans.__current_player = Preferans.next_player(Preferans.__current_player)
         while not Preferans.__not_defined[Preferans.__current_player] and \
                 Preferans.__pass[Preferans.__current_player]:
-            Preferans.__current_player = (Preferans.__current_player + 1) % 3
+            Preferans.__current_player = Preferans.next_player(Preferans.__current_player)
         return True
 
     @staticmethod
     def add_talon():
-        if Preferans.declarer() == 0:
-            Preferans.__hand0.append(Preferans.__talon[0])
-            Preferans.__hand0.append(Preferans.__talon[1])
-            Preferans.__hand0.sort(key=card_suit)
-            return Preferans.__hand0
-        if Preferans.declarer() == 1:
-            Preferans.__hand1.append(Preferans.__talon[0])
-            Preferans.__hand1.append(Preferans.__talon[1])
-            Preferans.__hand1.sort(key=card_suit)
-            return Preferans.__hand1
-        if Preferans.declarer() == 2:
-            Preferans.__hand2.append(Preferans.__talon[0])
-            Preferans.__hand2.append(Preferans.__talon[1])
-            Preferans.__hand2.sort(key=card_suit)
-            return Preferans.__hand2
+        Preferans.__hand[Preferans.declarer()].append(Preferans.__talon[0])
+        Preferans.__hand[Preferans.declarer()].append(Preferans.__talon[1])
+        Preferans.__hand[Preferans.declarer()].sort(key=card_suit)
+        return Preferans.__hand[Preferans.declarer()]
 
     @staticmethod
     def discard(card1_id, card2_id):
-        if Preferans.declarer() == 0:
-            del Preferans.__hand0[card1_id]
-            if card1_id < card2_id:
-                del Preferans.__hand0[card2_id - 1]
-            else:
-                del Preferans.__hand0[card2_id]
-        if Preferans.declarer() == 1:
-            del Preferans.__hand1[card1_id]
-            if card1_id < card2_id:
-                del Preferans.__hand1[card1_id - 1]
-            else:
-                del Preferans.__hand1[card2_id]
-        if Preferans.declarer() == 2:
-            del Preferans.__hand2[card1_id]
-            if card1_id < card2_id:
-                del Preferans.__hand2[card1_id - 1]
-            else:
-                del Preferans.__hand2[card2_id]
+        del Preferans.__hand[Preferans.declarer()][card1_id]
+        if card1_id < card2_id:
+            del Preferans.__hand[Preferans.declarer()][card2_id - 1]
+        else:
+            del Preferans.__hand[Preferans.declarer()][card2_id]
         if Preferans.__game_type == 'game':
             config.state = 'set_game'
         else:
-            config.state = 'game'
+            config.state = 'misere'
 
     @staticmethod
     def set_game(game):
@@ -166,38 +143,29 @@ class Preferans:
 
     @staticmethod
     def get_card(card_id):
-        card = 0
-        if Preferans.__current_player == 0:
-            card = Preferans.__hand0[card_id]
-            del Preferans.__hand0[card_id]
-        if Preferans.__current_player == 1:
-            card = Preferans.__hand1[card_id]
-            del Preferans.__hand1[card_id]
-        if Preferans.__current_player == 2:
-            card = Preferans.__hand2[card_id]
-            del Preferans.__hand2[card_id]
+        card = Preferans.__hand[Preferans.__current_player][card_id]
+        del Preferans.__hand[Preferans.__current_player][card_id]
         suit = card % 4
-        Preferans.__card_in_trick += 1
+        Preferans.__cards_in_trick += 1
         trick = Trick()
         trick.card = card
         trick.player = Preferans.current_player()
         Preferans.__tricks.append(trick)
-        if Preferans.__card_in_trick == 1:
+        if Preferans.__cards_in_trick == 1:
             Preferans.__current_suit = suit
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if Preferans.__card_in_trick == 2 or (Preferans.__game_type == 3 and Preferans.__tricks_total <= 2):
+        if Preferans.__cards_in_trick == 2 or (Preferans.__game_type == 3 and Preferans.__tricks_total <= 2):
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if (Preferans.__card_in_trick == 3 and (Preferans.__game_type != 3 or Preferans.__tricks_total > 2)) \
-                or Preferans.__card_in_trick == 4:
+        if (Preferans.__cards_in_trick == 3 and (Preferans.__game_type != 3 or Preferans.__tricks_total > 2)) \
+                or Preferans.__cards_in_trick == 4:
             def key(trick1):
                 value = 0
                 if trick1.card % 4 == Preferans.__trump_suit:
                     value += 1000 + trick1.card // 4
                 if trick1.card % 4 == Preferans.__current_suit:
                     value += trick1.card // 4
-                print(Preferans.__trump_suit)
                 return value
 
             def comp(card1, card2):
@@ -209,8 +177,14 @@ class Preferans:
                 Preferans.__current_player = 2
             Preferans.__current_player = Preferans.__tricks[Preferans.current_player()].player
             Preferans.__player_tricks[Preferans.__current_player] += 1
+            Preferans.__last_trick.clear()
+            for i in Preferans.__tricks:
+                temp_card = Trick()
+                temp_card.player = i.player
+                temp_card.card = i.card
+                Preferans.__last_trick.append(temp_card)
             Preferans.__tricks.clear()
-            Preferans.__card_in_trick = 0
+            Preferans.__cards_in_trick = 0
             Preferans.__tricks_total += 1
             if Preferans.__tricks_total == 10:
                 return False
@@ -218,34 +192,34 @@ class Preferans:
                 return True
 
     @staticmethod
+    def score():
+        print('Ok')
+        if Preferans.__game_type == 'game':
+            if Preferans.__player_tricks[Preferans.__declarer] >= Preferans.__dib // 4:
+                Preferans.__pool[Preferans.__declarer] += (Preferans.__dib // 4 - 5) * 2
+                for i in range(3):
+                    if i != Preferans.__declarer:
+                        Preferans.__whist[i][Preferans.__declarer] += Preferans.__player_tricks[i]
+
+    @staticmethod
     def hand_declarer():
-        if Preferans.declarer() == 0:
-            return Preferans.__hand0
-        if Preferans.declarer() == 1:
-            return Preferans.__hand1
-        if Preferans.declarer() == 2:
-            return Preferans.__hand2
+        return Preferans.__hand[Preferans.declarer()]
 
     @staticmethod
     def current_hand():
-        if Preferans.current_player() == 0:
-            return Preferans.__hand0
-        if Preferans.current_player() == 1:
-            return Preferans.__hand1
-        if Preferans.current_player() == 2:
-            return Preferans.__hand2
+        return Preferans.__hand[Preferans.current_player()]
 
     @staticmethod
     def hand0():
-        return Preferans.__hand0
+        return Preferans.__hand[0]
 
     @staticmethod
     def hand1():
-        return Preferans.__hand1
+        return Preferans.__hand[1]
 
     @staticmethod
     def hand2():
-        return Preferans.__hand2
+        return Preferans.__hand[2]
 
     @staticmethod
     def current_player():
@@ -282,3 +256,11 @@ class Preferans:
     @staticmethod
     def player_tricks():
         return Preferans.__player_tricks
+
+    @staticmethod
+    def last_trick():
+        return Preferans.__last_trick
+
+    @staticmethod
+    def cards_in_trick():
+        return Preferans.__cards_in_trick

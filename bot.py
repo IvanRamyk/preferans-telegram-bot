@@ -75,16 +75,22 @@ def get_card(call):
     if call.from_user.id != id_list[Preferans.current_player()]:
         return
     if Preferans.get_card(int(call.data)):
+        if Preferans.cards_in_trick() == 0:
+            for i in id_list:
+                bot.send_message(i, last_trick())
         start()
     else:
+        for i in id_list:
+            bot.send_message(i, last_trick())
+        Preferans.score()
         new_round()
 
 
 def new_round():
     Preferans.set_round()
-    bot.send_message(id_list[0], 'Твои карты:\n' + hand_to_string(Preferans.hand0()))
-    bot.send_message(id_list[1], 'Твои карты:\n' + hand_to_string(Preferans.hand1()))
-    bot.send_message(id_list[2], 'Твои карты:\n' + hand_to_string(Preferans.hand2()))
+    bot.send_message(id_list[0], 'Ваши карты:\n' + hand_to_string(Preferans.hand0()))
+    bot.send_message(id_list[1], 'Ваши карты:\n' + hand_to_string(Preferans.hand1()))
+    bot.send_message(id_list[2], 'Ваши карты:\n' + hand_to_string(Preferans.hand2()))
     ask_bidding()
 
 
@@ -138,10 +144,17 @@ def hand_to_keyboard(hand):
 
 def current_trick():
     if len(Preferans.trick()) == 0:
-        return ''
+        return players_tricks()
     answer = 'Текущая взятка\n'
     for i in Preferans.trick():
         answer += name_list[i.player] + ' - ' + hash_to_sting(i.card) + '\n'
+    return players_tricks() + answer
+
+
+def players_tricks():
+    answer = 'Взятки:\n'
+    for i in range(3):
+        answer += name_list[i] + ': ' + str(Preferans.player_tricks()[i]) + '\n'
     return answer
 
 
@@ -183,6 +196,16 @@ def hand_to_string(hand):
         answer += hash_to_sting(i)
         answer += ' '
         last_suit = i % 4
+    return answer
+
+
+def last_trick():
+    answer = ''
+    answer += 'Забрал игрок ' + name_list[Preferans.current_player()] + '\n'
+    for j in Preferans.last_trick():
+        for i in range(3):
+            if i == j.player:
+                answer += name_list[i] + ': ' + hash_to_sting(j.card) + '\n'
     return answer
 
 
