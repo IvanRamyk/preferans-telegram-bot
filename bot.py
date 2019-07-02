@@ -82,7 +82,7 @@ def get_card(call):
     else:
         for i in id_list:
             bot.send_message(i, last_trick())
-        Preferans.score()
+        # Preferans.score()
         new_round()
 
 

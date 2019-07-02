@@ -191,7 +191,7 @@ class Preferans:
             else:
                 return True
 
-    @staticmethod
+    '''@staticmethod
     def score():
         print('Ok')
         if Preferans.__game_type == 'game':
@@ -199,7 +199,7 @@ class Preferans:
                 Preferans.__pool[Preferans.__declarer] += (Preferans.__dib // 4 - 5) * 2
                 for i in range(3):
                     if i != Preferans.__declarer:
-                        Preferans.__whist[i][Preferans.__declarer] += Preferans.__player_tricks[i]
+                        Preferans.__whist[i][Preferans.__declarer] += Preferans.__player_tricks[i]'''
 
     @staticmethod
     def hand_declarer():
