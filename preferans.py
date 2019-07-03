@@ -99,7 +99,7 @@ class Preferans:
                 Preferans.__cnt_defined += 1
         if Preferans.__cnt_pass == 3:
             Preferans.__game_type = 'all-pass'
-            config.state = 'all-pass'
+            config.state = 'game'
             return False
         if Preferans.__cnt_defined == 3 and Preferans.__cnt_pass == 2:
             if Preferans.__is_misere:
@@ -155,11 +155,11 @@ class Preferans:
             Preferans.__current_suit = suit
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if Preferans.__cards_in_trick == 2 or (Preferans.__game_type == 3 and Preferans.__tricks_total <= 2):
+        if Preferans.__cards_in_trick == 2 or (Preferans.__cards_in_trick == 3 and Preferans.__game_type == 'all-pass'
+                                               and Preferans.__tricks_total <= 2):
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
             return True
-        if (Preferans.__cards_in_trick == 3 and (Preferans.__game_type != 3 or Preferans.__tricks_total > 2)) \
-                or Preferans.__cards_in_trick == 4:
+        if Preferans.__cards_in_trick >= 3:
             def key(trick1):
                 value = 0
                 if trick1.card % 4 == Preferans.__trump_suit:
@@ -170,11 +170,18 @@ class Preferans:
 
             def comp(card1, card2):
                 return key(card1) > key(card2)
-            Preferans.__current_player = 0
-            if comp(Preferans.__tricks[1], Preferans.__tricks[Preferans.__current_player]):
+            if Preferans.__game_type == 'all-pass' and Preferans.__tricks_total <= 2:
                 Preferans.__current_player = 1
-            if comp(Preferans.__tricks[2], Preferans.__tricks[Preferans.__current_player]):
-                Preferans.__current_player = 2
+                if comp(Preferans.__tricks[2], Preferans.__tricks[Preferans.__current_player]):
+                    Preferans.__current_player = 2
+                if comp(Preferans.__tricks[3], Preferans.__tricks[Preferans.__current_player]):
+                    Preferans.__current_player = 3
+            else:
+                Preferans.__current_player = 0
+                if comp(Preferans.__tricks[1], Preferans.__tricks[Preferans.__current_player]):
+                    Preferans.__current_player = 1
+                if comp(Preferans.__tricks[2], Preferans.__tricks[Preferans.__current_player]):
+                    Preferans.__current_player = 2
             Preferans.__current_player = Preferans.__tricks[Preferans.current_player()].player
             Preferans.__player_tricks[Preferans.__current_player] += 1
             Preferans.__last_trick.clear()
