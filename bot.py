@@ -18,7 +18,7 @@ def start_messaging(message):
         id_list.append(message.from_user.id)
         name_list.append(message.from_user.first_name)
         count_id += 1
-        if count_id == config.cnt_players:
+        if count_id == 3:
             new_round()
     else:
         bot.send_message(message.from_user.id, 'К сожалению, мест нет(')
@@ -60,6 +60,8 @@ def discarding(call):
         discard.clear()
         if Preferans.game_type() == 'game':
             bot.send_message(id_list[Preferans.declarer()], text='Закажите игру', reply_markup=game_keyboard())
+        else:
+            start()
 
 
 @bot.callback_query_handler(func=lambda call: config.state == 'set_game')

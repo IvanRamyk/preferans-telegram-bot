@@ -132,7 +132,7 @@ class Preferans:
         if Preferans.__game_type == 'game':
             config.state = 'set_game'
         else:
-            config.state = 'misere'
+            config.state = 'game'
 
     @staticmethod
     def set_game(game):
