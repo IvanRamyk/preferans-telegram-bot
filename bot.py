@@ -50,17 +50,42 @@ def bidding(call):
             bot.send_message(id_list[Preferans.declarer()], text='Что хотите понести?', reply_markup=keyboard)
 
 
+'''
+def menu_actions(bot, update):
+...
+    query = update.callback_query
+    reply_markup = InlineKeyboardMarkup(menu_1)
+    bot.edit_message_text(chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        text='Choose the option:',
+        reply_markup=reply_markup)
+        
+        
+        This was taken from old "discard" function, should not be forgot to put back
+        For now it is hold in the last lines of discarding()
+                if Preferans.__game_type == 'game':
+            config.state = 'set_game'
+        else:
+            config.state = 'game'
+
+'''
+
+
 @bot.callback_query_handler(func=lambda call: config.state == 'talon')
 def discarding(call):
     if call.from_user.id != id_list[Preferans.current_player()]:
         return
-    discard.append(call.data)
-    if len(discard) == 2:
-        Preferans.discard(int(discard[0]), int(discard[1]))
-        discard.clear()
+    Preferans.discard(int(call.data))
+    Preferans.inc_discard()
+    bot.edit_message_reply_markup(chat_id=call.from_user.id,
+                                  message_id=call.message.message_id, reply_markup=hand_to_keyboard(Preferans.hand_declarer()))
+    if Preferans.discarded() == 2:
+        Preferans.inc_discard()
         if Preferans.game_type() == 'game':
+            config.state = 'set_game'
             bot.send_message(id_list[Preferans.declarer()], text='Закажите игру', reply_markup=game_keyboard())
         else:
+            config.state = 'game'
             start()
 
 

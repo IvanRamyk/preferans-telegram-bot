@@ -37,10 +37,19 @@ class Preferans:
     __current_suit = 0
     __tricks_total = 0
     __last_trick = []
+    __discarded = 0
 
     @staticmethod
     def next_player(player):
         return (player + 1) % 3
+
+    @staticmethod
+    def inc_discard():
+        Preferans.__discarded = (Preferans.__discarded+1) % 3
+
+    @staticmethod
+    def discarded():
+        return Preferans.__discarded
 
     @staticmethod
     def set_round():
@@ -59,6 +68,7 @@ class Preferans:
         Preferans.__cnt_defined = 0
         Preferans.__cnt_pass = 0
         Preferans.__tricks_number = 0
+        Preferans.__dib = 23
         card_list = []
         for i in range(28, 60):
             card_list.append(i)
@@ -123,16 +133,9 @@ class Preferans:
         return Preferans.__hand[Preferans.declarer()]
 
     @staticmethod
-    def discard(card1_id, card2_id):
+    def discard(card1_id):
         del Preferans.__hand[Preferans.declarer()][card1_id]
-        if card1_id < card2_id:
-            del Preferans.__hand[Preferans.declarer()][card2_id - 1]
-        else:
-            del Preferans.__hand[Preferans.declarer()][card2_id]
-        if Preferans.__game_type == 'game':
-            config.state = 'set_game'
-        else:
-            config.state = 'game'
+
 
     @staticmethod
     def set_game(game):
