@@ -109,6 +109,8 @@ def get_card(call):
     else:
         for i in id_list:
             bot.send_message(i, last_trick())
+        for i in id_list:
+            bot.send_message(i, players_tricks())
         # Preferans.score()
         new_round()
 
