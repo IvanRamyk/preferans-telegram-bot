@@ -1,2 +1,2 @@
-Token = '815199695:AAFKDtTx4VB58Dpws0nOLHxndiRR6AJ6m2w'
-cnt_players = 3
+Token = '834669972:AAGM0VgiSOU0iUeld4MJdTPJaJvGHy16umE'
+state = ''
