@@ -212,6 +212,11 @@ class Preferans:
                         Preferans.__whist[i][Preferans.__declarer] += Preferans.__player_tricks[i]'''
 
     @staticmethod
+    def add_pass_card():
+        Preferans.__tricks.append(Preferans.__talon[0])
+        del Preferans.__talon[0]
+
+    @staticmethod
     def hand_declarer():
         return Preferans.__hand[Preferans.declarer()]
 
