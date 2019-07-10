@@ -192,6 +192,8 @@ class Preferans:
             Preferans.__trick.clear()
             Preferans.__cards_in_trick = 0
             Preferans.__tricks_total += 1
+            if Preferans.__game_type == 'all-pass' and Preferans.__tricks_total <= 2:
+                Preferans.__current_player = Preferans.__move
             if Preferans.__tricks_total == 10:
                 return False
             else:
@@ -220,8 +222,16 @@ class Preferans:
             return True
 
     @staticmethod
+    def need_pass_card():
+        return Preferans.__game_type == 'all-pass' and Preferans.__tricks_total < 2 and len(Preferans.__trick) == 0
+
+    @staticmethod
     def add_pass_card():
-        Preferans.__trick.append(Preferans.__talon[0])
+        trick = Trick()
+        trick.card = Preferans.__talon[0]
+        trick.player = -1
+        Preferans.__trick.append(trick)
+        Preferans.__cards_in_trick += 1
         del Preferans.__talon[0]
 
     @staticmethod

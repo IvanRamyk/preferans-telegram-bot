@@ -48,6 +48,8 @@ def bidding(call):
             Preferans.add_talon()
             keyboard = hand_to_keyboard(Preferans.hand_declarer())
             bot.send_message(id_list[Preferans.declarer()], text='Что хотите понести?', reply_markup=keyboard)
+        else:
+            start()
 
 
 '''
@@ -208,6 +210,8 @@ def players_tricks():
 
 
 def start():
+    if Preferans.need_pass_card():
+        Preferans.add_pass_card()
     message = current_trick() + 'Ваш ход'
     bot.send_message(id_list[Preferans.current_player()], text=message,
                      reply_markup=hand_to_keyboard(Preferans.current_hand()))
