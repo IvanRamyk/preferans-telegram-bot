@@ -94,7 +94,7 @@ def set_game(call):
     if call.from_user.id != id_list[Preferans.current_player()]:
         return
     Preferans.set_game(int(call.data))
-    start()
+    ask_whist()
 
 
 @bot.callback_query_handler(func=lambda call: config.state == 'game')
@@ -115,6 +115,16 @@ def get_card(call):
         new_round()
 
 
+@bot.callback_query_handler(func=lambda call: config.state == 'whist')
+def whist(call):
+    if call.from_user.id != id_list[Preferans.current_player()]:
+        return
+    if Preferans.get_whist(call.data == 'whist'):
+        ask_whist()
+    else:
+        start()
+
+
 def new_round():
     Preferans.set_round()
     bot.send_message(id_list[0], 'Ваши карты:\n' + hand_to_string(Preferans.hand0()))
@@ -132,6 +142,16 @@ def ask_bidding():
     keyboard.add(key_pas)
     keyboard.add(key_misere)
     question = "Ваша ставка?"
+    bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
+
+
+def ask_whist():
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    key_raz = telebot.types.InlineKeyboardButton(text='Вист', callback_data='whist')
+    key_pas = telebot.types.InlineKeyboardButton(text='Пас', callback_data='pass')
+    keyboard.add(key_raz)
+    keyboard.add(key_pas)
+    question = "Ваш слово?"
     bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
 
 

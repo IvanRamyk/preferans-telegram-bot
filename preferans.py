@@ -31,7 +31,8 @@ class Preferans:
     __is_misere = False
     __cnt_pass = 0
     __cnt_defined = 0
-    __tricks = []
+    __trick = []
+    __defenders = []
     __player_tricks = [0, 0, 0]
     __cards_in_trick = 0
     __current_suit = 0
@@ -69,6 +70,7 @@ class Preferans:
         Preferans.__cnt_pass = 0
         Preferans.__tricks_number = 0
         Preferans.__dib = 23
+        Preferans.__defenders.clear()
         card_list = []
         for i in range(28, 60):
             card_list.append(i)
@@ -87,26 +89,20 @@ class Preferans:
 
     @staticmethod
     def update_bidding(type_answer):
+        if Preferans.__not_defined[Preferans.__current_player]:
+            Preferans.__not_defined[Preferans.__current_player] = False
+            Preferans.__cnt_defined += 1
         if type_answer == 'raise':
             Preferans.__dib += 1
             Preferans.__is_misere = False
             Preferans.__declarer = Preferans.__current_player
-            if Preferans.__not_defined[Preferans.__current_player]:
-                Preferans.__not_defined[Preferans.__current_player] = False
-                Preferans.__cnt_defined += 1
         if type_answer == 'misere':
             Preferans.__dib = 35
             Preferans.__is_misere = True
             Preferans.__declarer = Preferans.__current_player
-            if Preferans.__not_defined[Preferans.__current_player]:
-                Preferans.__not_defined[Preferans.__current_player] = False
-                Preferans.__cnt_defined += 1
         if type_answer == 'fold':
             Preferans.__pass[Preferans.__current_player] = True
             Preferans.__cnt_pass += 1
-            if Preferans.__not_defined[Preferans.__current_player]:
-                Preferans.__not_defined[Preferans.__current_player] = False
-                Preferans.__cnt_defined += 1
         if Preferans.__cnt_pass == 3:
             Preferans.__game_type = 'all-pass'
             config.state = 'game'
@@ -136,13 +132,13 @@ class Preferans:
     def discard(card1_id):
         del Preferans.__hand[Preferans.declarer()][card1_id]
 
-
     @staticmethod
     def set_game(game):
         Preferans.__tricks_number = game // 4
         Preferans.__trump_suit = game % 4
-        Preferans.__current_player = Preferans.__move
-        config.state = 'game'
+        Preferans.__current_player = Preferans.next_player(Preferans.__declarer)
+        Preferans.__cnt_defined = 0
+        config.state = 'whist'
 
     @staticmethod
     def get_card(card_id):
@@ -153,7 +149,7 @@ class Preferans:
         trick = Trick()
         trick.card = card
         trick.player = Preferans.current_player()
-        Preferans.__tricks.append(trick)
+        Preferans.__trick.append(trick)
         if Preferans.__cards_in_trick == 1:
             Preferans.__current_suit = suit
             Preferans.__current_player = (Preferans.__current_player + 1) % 3
@@ -175,25 +171,25 @@ class Preferans:
                 return key(card1) > key(card2)
             if Preferans.__game_type == 'all-pass' and Preferans.__tricks_total <= 2:
                 Preferans.__current_player = 1
-                if comp(Preferans.__tricks[2], Preferans.__tricks[Preferans.__current_player]):
+                if comp(Preferans.__trick[2], Preferans.__trick[Preferans.__current_player]):
                     Preferans.__current_player = 2
-                if comp(Preferans.__tricks[3], Preferans.__tricks[Preferans.__current_player]):
+                if comp(Preferans.__trick[3], Preferans.__trick[Preferans.__current_player]):
                     Preferans.__current_player = 3
             else:
                 Preferans.__current_player = 0
-                if comp(Preferans.__tricks[1], Preferans.__tricks[Preferans.__current_player]):
+                if comp(Preferans.__trick[1], Preferans.__trick[Preferans.__current_player]):
                     Preferans.__current_player = 1
-                if comp(Preferans.__tricks[2], Preferans.__tricks[Preferans.__current_player]):
+                if comp(Preferans.__trick[2], Preferans.__trick[Preferans.__current_player]):
                     Preferans.__current_player = 2
-            Preferans.__current_player = Preferans.__tricks[Preferans.current_player()].player
+            Preferans.__current_player = Preferans.__trick[Preferans.current_player()].player
             Preferans.__player_tricks[Preferans.__current_player] += 1
             Preferans.__last_trick.clear()
-            for i in Preferans.__tricks:
+            for i in Preferans.__trick:
                 temp_card = Trick()
                 temp_card.player = i.player
                 temp_card.card = i.card
                 Preferans.__last_trick.append(temp_card)
-            Preferans.__tricks.clear()
+            Preferans.__trick.clear()
             Preferans.__cards_in_trick = 0
             Preferans.__tricks_total += 1
             if Preferans.__tricks_total == 10:
@@ -212,8 +208,20 @@ class Preferans:
                         Preferans.__whist[i][Preferans.__declarer] += Preferans.__player_tricks[i]'''
 
     @staticmethod
+    def get_whist(is_whist):
+        Preferans.__cnt_defined += 1
+        if is_whist:
+            Preferans.__defenders.append(Preferans.current_player())
+        if Preferans.__cnt_defined == 2:
+            config.state = 'game'
+            Preferans.__current_player = Preferans.__move
+            return False
+        else:
+            return True
+
+    @staticmethod
     def add_pass_card():
-        Preferans.__tricks.append(Preferans.__talon[0])
+        Preferans.__trick.append(Preferans.__talon[0])
         del Preferans.__talon[0]
 
     @staticmethod
@@ -266,7 +274,7 @@ class Preferans:
 
     @staticmethod
     def trick():
-        return Preferans.__tricks
+        return Preferans.__trick
 
     @staticmethod
     def player_tricks():
