@@ -219,6 +219,7 @@ class Preferans:
             Preferans.__current_player = Preferans.__move
             return False
         else:
+            Preferans.__current_player = Preferans.next_player(Preferans.__current_player) 
             return True
 
     @staticmethod

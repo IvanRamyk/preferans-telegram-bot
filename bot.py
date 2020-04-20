@@ -52,27 +52,6 @@ def bidding(call):
             start()
 
 
-'''
-def menu_actions(bot, update):
-...
-    query = update.callback_query
-    reply_markup = InlineKeyboardMarkup(menu_1)
-    bot.edit_message_text(chat_id=query.message.chat_id,
-        message_id=query.message.message_id,
-        text='Choose the option:',
-        reply_markup=reply_markup)
-        
-        
-        This was taken from old "discard" function, should not be forgot to put back
-        For now it is hold in the last lines of discarding()
-                if Preferans.__game_type == 'game':
-            config.state = 'set_game'
-        else:
-            config.state = 'game'
-
-'''
-
-
 @bot.callback_query_handler(func=lambda call: config.state == 'talon')
 def discarding(call):
     if call.from_user.id != id_list[Preferans.current_player()]:
@@ -153,7 +132,7 @@ def ask_whist():
     key_pas = telebot.types.InlineKeyboardButton(text='Пас', callback_data='pass')
     keyboard.add(key_raz)
     keyboard.add(key_pas)
-    question = "Ваш слово?"
+    question = "Ваш слово? {0}".format(Preferans.current_player())
     bot.send_message(id_list[Preferans.current_player()], text=question, reply_markup=keyboard)
 
 
